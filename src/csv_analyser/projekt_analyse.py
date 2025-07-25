@@ -1,71 +1,4 @@
 
-"""
-projekt_analyse.py
-Dieses Modul bietet Funktionen zur Analyse von Python-Projekten hinsichtlich ihrer Datei- und Importstruktur sowie zur Durchführung einer Flake8-Codeprüfung.
-Funktionen:
------------
-- finde_python_dateien(root):
-    Durchsucht rekursiv ein Verzeichnis nach allen Python-Dateien (.py) und gibt deren Pfade zurück.
-- print_verwendete_module(verwendet_von):
-    Gibt eine strukturierte Übersicht darüber aus, welche Module von welchen Dateien im Projekt verwendet werden.
-- extrahiere_imports(dateipfad):
-    Extrahiert alle importierten Module aus einer gegebenen Python-Datei und gibt diese als Set zurück.
-- analysiere_imports(py_dateien):
-    Analysiert die Importbeziehungen zwischen den gefundenen Python-Dateien, ermittelt verwendete und nicht verwendete Module und gibt entsprechende Zuordnungen zurück.
-- flake8_pruefen(dateien):
-    Führt eine Flake8-Codeanalyse für eine Liste von Python-Dateien durch und gibt die Ergebnisse aus.
-- hauptfunktion(startverzeichnis):
-    Hauptfunktion zur Durchführung der Analyse: Findet alle Python-Dateien, analysiert die Importe, listet nicht verwendete Dateien auf, speichert die Ergebnisse in einer Datei und führt eine Flake8-Prüfung durch.
-Verwendung:
------------
-Das Skript kann direkt ausgeführt werden. Es verwendet einen Basis-Pfad aus einer Konfigurationsdatei (CONFIG.BASIS_PFAD) als Startpunkt für die Analyse.
-Abhängigkeiten:
----------------
-- os
-- re
-- subprocess
-- collections.defaultdict
-- config.CONFIG (externe Konfigurationsdatei)
-- flake8 (muss installiert sein)
-Ergebnis:
----------
-Die Analyseergebnisse werden sowohl auf der Konsole ausgegeben als auch in der Datei 'import_analyse_ergebnis.txt' gespeichert.
-"""
-import os
-import re
-import subprocess
-from collections import defaultdict
-from config import CONFIG
-
-# -------------------------------------------
-# 🔎 Datei- & Import-Analyse (wie oben)
-# -------------------------------------------
-
-def finde_python_dateien(root: str) -> list[str]:
-    """
-    Durchsucht rekursiv den angegebenen Projektordner und alle Unterordner (z. B. data, notebooks, prompts)
-    nach Python-Dateien, ignoriert aber das .venv-Verzeichnis.
-
-    :param root: Startverzeichnis (Projektordner)
-    :type root: str
-    :return: Liste aller gefundenen .py-Dateien (mit Pfad)
-    :rtype: list[str]
-    :example:
-        >>> finde_python_dateien("meinprojekt")
-        ['meinprojekt/main.py', 'meinprojekt/data/dataset.py', 'meinprojekt/notebooks/auswertung.py']
-    """
-    py_files = []
-    for ordner, verzeichnisse, dateien in os.walk(root):
-        # .venv-Verzeichnis aus der Suche ausschließen
-        if ".venv" in verzeichnisse:
-            verzeichnisse.remove(".venv")
-        for datei in dateien:
-            if datei.endswith(".py"):
-                pfad = os.path.join(ordner, datei)
-                py_files.append(os.path.normpath(pfad))
-    return py_files
-
-
 def print_verwendete_module(verwendet_von):
     """
     Gibt eine strukturierte Übersicht darüber aus, welche Module von welchen Dateien verwendet werden.
@@ -91,36 +24,53 @@ def print_verwendete_module(verwendet_von):
         print_baum(baum)
         print("".ljust(60, "─"))
 
-def schreibe_python_dateien_baum_alle(dateipfad: str, wurzelverzeichnis: str) -> None:
+# 🔎 Datei- & Import-Analyse (wie oben)
+# -------------------------------------------
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+import re
+import subprocess
+from collections import defaultdict
+from csv_analyser.config import CONFIG
+
+
+def finde_python_dateien(root: str) -> list[str]:
     """
-    Schreibt eine vollständige Baumstruktur aller Dateien und Unterordner (außer .git und .venv)
-    in die angegebene Textdatei.
+    Durchsucht rekursiv den angegebenen Projektordner und alle Unterordner (z. B. data, notebooks, prompts)
+    nach Python-Dateien, ignoriert aber das .venv-Verzeichnis.
 
-    :param dateipfad: Name der Ausgabedatei.
-    :type dateipfad: str
-    :param wurzelverzeichnis: Startverzeichnis für die Baumdarstellung.
-    :type wurzelverzeichnis: str
+    :param root: Startverzeichnis (Projektordner)
+    :type root: str
+    :return: Liste aller gefundenen .py-Dateien (mit Pfad)
+    :rtype: list[str]
+    :example:
+        >>> finde_python_dateien("meinprojekt")
+        ['meinprojekt/main.py', 'meinprojekt/data/dataset.py', 'meinprojekt/notebooks/auswertung.py']
     """
-    import os
+"""
+projekt_analyse.py
 
-    def schreibe_baum(pfad: str, prefix: str, f):
-        eintraege = sorted(
-            [e for e in os.listdir(pfad)
-             if e not in (".git", ".venv")],
-            key=lambda x: (not os.path.isdir(os.path.join(pfad, x)), x.lower())
-        )
-        for i, eintrag in enumerate(eintraege):
-            vollpfad = os.path.join(pfad, eintrag)
-            ist_letzter = (i == len(eintraege) - 1)
-            connector = "└── " if ist_letzter else "├── "
-            f.write(f"{prefix}{connector}{eintrag}\n")
-            if os.path.isdir(vollpfad):
-                neues_prefix = prefix + ("    " if ist_letzter else "│   ")
-                schreibe_baum(vollpfad, neues_prefix, f)
+Dieses Modul bietet Funktionen zur Analyse von Python-Projekten hinsichtlich ihrer Datei- und Importstruktur sowie zur Durchführung einer Flake8-Codeprüfung.
 
-    with open(dateipfad, "w", encoding="utf-8") as f:
-        f.write("📄 Alle Dateien und Ordner:\n")
-        schreibe_baum(wurzelverzeichnis, "", f)
+Funktionen:
+    - finde_python_dateien(root): Sucht rekursiv nach allen Python-Dateien (.py) und gibt deren Pfade zurück.
+    - print_verwendete_module(verwendet_von): Gibt eine strukturierte Übersicht, welche Module von welchen Dateien verwendet werden.
+    - extrahiere_imports(dateipfad): Extrahiert alle importierten Module aus einer Python-Datei und gibt diese als Set zurück.
+    - analysiere_imports(py_dateien): Analysiert die Importbeziehungen, ermittelt verwendete und nicht verwendete Module und gibt Zuordnungen zurück.
+    - flake8_pruefen(dateien): Führt eine Flake8-Codeanalyse für eine Liste von Python-Dateien durch und gibt die Ergebnisse aus.
+    - hauptfunktion(startverzeichnis): Hauptfunktion zur Durchführung der Analyse.
+
+Verwendung:
+    Das Skript kann direkt ausgeführt werden. Es verwendet einen Basis-Pfad aus einer Konfigurationsdatei (CONFIG.BASIS_PFAD) als Startpunkt für die Analyse.
+
+Abhängigkeiten:
+    - os, re, subprocess, collections.defaultdict, config.CONFIG (externe Konfigurationsdatei), flake8 (muss installiert sein)
+
+Ergebnis:
+    Die Analyseergebnisse werden sowohl auf der Konsole ausgegeben als auch in der Datei 'import_analyse_ergebnis.txt' gespeichert.
+"""
+
 
 
 
@@ -201,15 +151,11 @@ def schreibe_kompletten_verzeichnisbaum(dateipfad: str, wurzelverzeichnis: str) 
     import os
 
     def schreibe_baum(pfad: str, prefix: str, f):
-        try:
-            eintraege = sorted(
-                [e for e in os.listdir(pfad)
-                 if not e.startswith(".")],
-                key=lambda x: (not os.path.isdir(os.path.join(pfad, x)), x.lower())
-            )
-        except PermissionError:
-            return  # Falls kein Zugriff auf einen Ordner besteht
-
+        eintraege = sorted(
+            [e for e in os.listdir(pfad)
+             if not e.startswith(".")],
+            key=lambda x: (not os.path.isdir(os.path.join(pfad, x)), x.lower())
+        )
         for i, eintrag in enumerate(eintraege):
             vollpfad = os.path.join(pfad, eintrag)
             ist_letzter = (i == len(eintraege) - 1)

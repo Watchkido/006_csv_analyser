@@ -4,7 +4,7 @@ reporting.py
 Funktionen zur Berichterstellung.
 Hier werden Berichte oder Präsentationen aus Analyseergebnissen erzeugt.
 """
-from config import CONFIG
+from csv_analyser.config import CONFIG 
 def create_report(results):
     print('Report:', results)
         

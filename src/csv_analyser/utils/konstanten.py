@@ -24,7 +24,18 @@ CONFIG = SimpleNamespace(
     MAX_ITER=1000,  # Maximale Iterationen für Algorithmen
     TOL=1e-4,  # Toleranz für Konvergenz
     ENCODING="utf-8",  # Standard-Encoding für Dateien
-    CSV_DELIMITER=","  # Trennzeichen für CSV-Dateien
+    CSV_DELIMITER=",",  # Trennzeichen für CSV-Dateien
+    # Analyse-Schwellenwerte und Magic Numbers
+    OUTLIER_ZSCORE=3.0,  # Schwelle für Ausreißer (z-Score)
+    SKEW_SYMMETRIC=0.5,  # Schwellwert für symmetrische Verteilung
+    KURTOSIS_NORMAL=3.0,  # Referenzwert für Normalverteilung
+    HIGH_CORR=0.7,  # Schwelle für hohe Korrelation
+    REGRESSION_MIN_SAMPLES=5,  # Mindestanzahl für Regression
+    MULTI_REGRESSION_MIN_SAMPLES=10,  # Mindestanzahl für multiple Regression
+    TREND_STABLE=0.001,  # Schwelle für stabilen Trend
+    TIME_DAY_SECONDS=86400.0,  # Sekunden pro Tag
+    OPTIMIZATION_CORR=0.5,  # Schwelle für Optimierungsempfehlung
+    TOP_N=10  # Top-N für Rankings
 )
 
 HELLO = 'Hallo aus utils!'

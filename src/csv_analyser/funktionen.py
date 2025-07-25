@@ -4,7 +4,7 @@ from projektstruktur import erstelle_struktur
 from git_tools import initialisiere_git_und_push
 from skript_tools import finde_scripts, run_python_script
 import sys
-
+from csv_analyser.config import CONFIG 
 def projekt_anlegen(projekt: str, nutzer: str, privat: bool, basis_pfad: str) -> str:
     """
     Legt ein neues Projekt an und initialisiert ein Git-Repository.

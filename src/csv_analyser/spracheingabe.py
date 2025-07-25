@@ -1,5 +1,6 @@
 #spracheingabe tool
 
+from csv_analyser.config import CONFIG 
 
 
 

@@ -4,7 +4,7 @@ visualization.py
 Funktionen zur Visualisierung von Daten.
 Hier werden Plots und Diagramme erstellt.
 """
-from config import CONFIG
+from csv_analyser.config import CONFIG 
 import matplotlib.pyplot as plt
 
 def plot_hist(df, column):

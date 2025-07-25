@@ -1,0 +1,146 @@
+📄 Alle Dateien und Ordner:
+├── data
+│   ├── cached
+│   ├── finished
+│   ├── merged
+│   ├── processed
+│   ├── raw
+│   └── results
+├── datenbank
+├── docs
+├── notebooks
+│   ├── 020_duplikate.ipynb
+│   ├── analysis.ipynb
+│   ├── grundlagen.ipynb
+│   ├── report.ipynb
+│   └── sandbox.ipynb
+├── prompts
+│   ├── prompt01.txt
+│   ├── prompt02.txt
+│   └── prompt03.txt
+├── scripts
+│   ├── template_00_data_processing.py
+│   ├── template_01_data_loader.py
+│   ├── template_02_data_exploration.py
+│   ├── template_03_data_cleanup.py
+│   ├── template_04_feature_engineering.py
+│   ├── template_05_data_imputation.py
+│   ├── template_06_outlier_detection.py
+│   ├── template_07_data_visualization.py
+│   ├── template_08_modeling_pipeline.py
+│   ├── template_09_model_evaluation.py
+│   └── template_10_reporting.py
+├── src
+│   ├── csv_analyser
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-313.pyc
+│   │   │   ├── config.cpython-313.pyc
+│   │   │   ├── csv_analyser.cpython-313.pyc
+│   │   │   ├── csv_analyzer_10.cpython-313.pyc
+│   │   │   ├── funktionen.cpython-313.pyc
+│   │   │   ├── gps_analysis.cpython-313.pyc
+│   │   │   └── main.cpython-313.pyc
+│   │   ├── utils
+│   │   │   ├── __pycache__
+│   │   │   │   ├── __init__.cpython-313.pyc
+│   │   │   │   ├── csv_analyser_utils.cpython-313.pyc
+│   │   │   │   └── konstanten.cpython-313.pyc
+│   │   │   ├── __init__.py
+│   │   │   ├── csv_analyser_utils.py
+│   │   │   └── konstanten.py
+│   │   ├── __init__.py
+│   │   ├── config.py
+│   │   ├── constants.py
+│   │   ├── csv_analyser.py
+│   │   ├── csv_analyzer_10.py
+│   │   ├── csv_analyzer_11_amazon_datensatz.py
+│   │   ├── funktionen.py
+│   │   ├── gps_analysis.py
+│   │   ├── gui.py
+│   │   ├── logging_config.py
+│   │   ├── main.py
+│   │   ├── projekt_analyse.py
+│   │   ├── reporting.py
+│   │   ├── spracheingabe.py
+│   │   └── visualization.py
+│   └── import_analyse_ergebnis.txt
+├── tests
+│   ├── __pycache__
+│   │   ├── __init__.cpython-313.pyc
+│   │   ├── test_01_unit.cpython-313-pytest-8.4.1.pyc
+│   │   ├── test_02_integration.cpython-313-pytest-8.4.1.pyc
+│   │   ├── test_03_system.cpython-313-pytest-8.4.1.pyc
+│   │   ├── test_04_fuzz.cpython-313-pytest-8.4.1.pyc
+│   │   ├── test_05_penetration.cpython-313-pytest-8.4.1.pyc
+│   │   ├── test_05_security.cpython-313-pytest-8.4.1.pyc
+│   │   ├── test_07_performance.cpython-313-pytest-8.4.1.pyc
+│   │   ├── test_08_Affe.cpython-313-pytest-8.4.1.pyc
+│   │   ├── test_09_wiederherstellbarkeit.cpython-313-pytest-8.4.1.pyc
+│   │   └── test_10_Umwelt.cpython-313-pytest-8.4.1.pyc
+│   ├── __init__.py
+│   ├── test_01_unit.py
+│   ├── test_02_integration.py
+│   ├── test_03_system.py
+│   ├── test_04_fuzz.py
+│   ├── test_05_penetration.py
+│   ├── test_05_security.py
+│   ├── test_07_performance.py
+│   ├── test_08_Affe.py
+│   ├── test_09_wiederherstellbarkeit.py
+│   └── test_10_Umwelt.py
+├── agent.md
+├── claude.md
+├── copilot_instruction.md
+├── coursroles.md
+├── LICENSE
+├── pyproject.toml
+├── README.md
+├── requirements-dev.txt
+└── requirements.txt
+
+🔗 Verwendete Module:
+funktionen verwendet in:
+  └── watchkido
+config verwendet in:
+  └── watchkido
+  └── watchkido
+  └── watchkido
+  └── watchkido
+
+🧹 Nicht verwendete Dateien:
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\scripts\template_00_data_processing.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\scripts\template_01_data_loader.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\scripts\template_02_data_exploration.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\scripts\template_03_data_cleanup.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\scripts\template_04_feature_engineering.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\scripts\template_05_data_imputation.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\scripts\template_06_outlier_detection.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\scripts\template_07_data_visualization.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\scripts\template_08_modeling_pipeline.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\scripts\template_09_model_evaluation.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\scripts\template_10_reporting.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser_mod\constants.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser_mod\csv_analyser.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser_mod\csv_analyzer_10.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser_mod\csv_analyzer_11_amazon_datensatz.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser_mod\gps_analysis.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser_mod\gui.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser_mod\logging_config.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser_mod\main.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser_mod\projekt_analyse.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser_mod\reporting.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser_mod\spracheingabe.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser_mod\visualization.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\tests\__init__.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser_mod\utils\csv_analyser_utils.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser_mod\utils\konstanten.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\tests\test_01_unit.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\tests\test_02_integration.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\tests\test_03_system.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\tests\test_04_fuzz.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\tests\test_05_penetration.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\tests\test_05_security.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\tests\test_07_performance.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\tests\test_08_Affe.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\tests\test_09_wiederherstellbarkeit.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\tests\test_10_Umwelt.py
