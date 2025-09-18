@@ -35,7 +35,7 @@ Ein umfassendes Python-Programm zur automatischen Analyse von CSV-Dateien mit er
 pip install pandas numpy matplotlib seaborn scipy scikit-learn statsmodels
 
 # Repository klonen
-git clone <repository-url>
+git clone https://github.com/Watchkido/006_csv_analyser
 cd csv-data-analyzer
 ```
 ## Beispielausgabe
@@ -43,17 +43,17 @@ cd csv-data-analyzer
 📊 Shape: 200 Zeilen × 5 Spalten  
 🔢 Gesamt-Datenpunkte: 1,000  
 ✅ Keine fehlenden Werte gefunden!
-
+```bash
        CustomerID         Age  Annual Income (k$)  Spending Score (1-100)
 count  200.000000  200.000000          200.000000              200.000000
 mean   100.500000   38.850000           60.560000               50.200000
 std     57.879185   13.969007           26.264721               25.823522
 min      1.000000   18.000000           15.000000                1.000000
 max    200.000000   70.000000          137.000000               99.000000
-
+```
 
 ## Projektstruktur
-
+```bash
 csv-data-analyzer/
 ├── main.py                 # Hauptprogramm
 ├── csv_analyzer.py         # Kernfunktionalität
@@ -61,28 +61,29 @@ csv-data-analyzer/
 ├── statistical_tests.py    # Statistische Methoden
 ├── requirements.txt        # Abhängigkeiten
 └── examples/               # Beispiel-CSV-Dateien
+```
 ---
-## 📈 Unterstützte Dateiformate
+### 📈 Unterstützte Dateiformate
 
-✅ CSV (, und | und TAB -getrennt)
+- **✅ CSV (, und | und TAB -getrennt)**
 ---
-## 📝 Lizenz
+### 📝 Lizenz
 
-MIT License – Sie können das Projekt frei verwenden, modifizieren und verteilen.
+- **MIT License – Sie können das Projekt frei verwenden, modifizieren und verteilen.**
 ---
-## 🤝 Beitragen
+### 🤝 Beitragen
 
-Beiträge sind willkommen! Bitte erstellen Sie einen Pull Request oder öffnen Sie ein Issue für Verbesserungsvorschläge.
+- **Beiträge sind willkommen! Bitte erstellen Sie einen Pull Request oder öffnen Sie ein Issue für Verbesserungsvorschläge.**
 ---
-## 📊 Beispiel-Dashboard
-Das Programm generiert automatisch ein umfassendes Analysis-Dashboard mit:
-Zusammenfassung der Datenqualität
-Statistischen Kennzahlen
-Visuellen Darstellungen
-Exportfunktion für Berichte (PDF/HTML)
+### 📊 Beispiel-Dashboard
+- **Das Programm generiert automatisch ein umfassendes Analysis-Dashboard mit:**
+- **Zusammenfassung der Datenqualität**
+- **Statistischen Kennzahlen**
+- **Visuellen Darstellungen**
+- **Exportfunktion für Berichte (PDF/HTML)**
 
 
-Hinweis: Dieses Tool ist für analytische Zwecke konzipiert und ersetzt nicht die fachliche Interpretation der Ergebnisse durch Domain-Experten.
+**Hinweis: Dieses Tool ist für analytische Zwecke konzipiert und ersetzt nicht die fachliche Interpretation der Ergebnisse durch Domain-Experten.**
 
 
 
