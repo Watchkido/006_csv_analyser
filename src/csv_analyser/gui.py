@@ -9,7 +9,7 @@
 import tkinter as tk
 import os
 from tkinter import messagebox, scrolledtext
-from funktionen import projekt_anlegen, skript_ausführen, projekt_analyse_starten, finde_alle_scripts
+from csv_analyser.funktionen import projekt_anlegen, skript_ausführen, projekt_analyse_starten, finde_alle_scripts
 from csv_analyser.config import CONFIG 
 
 def erstelle_projekt():

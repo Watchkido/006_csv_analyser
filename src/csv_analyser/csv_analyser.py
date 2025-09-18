@@ -66,4 +66,6 @@ def analysiere_csv_datei(csv_filepath: str, info_output: Optional[str] = None) -
 
     return abs_info_output
 
-# TODO: Erweiterbar für PDF-Export, spezielle Analysen etc.
+# TODO: cd e:/dev/projekt_python_venv/006_csv_analyser/src
+# TODO:   python -m csv_analyser.csv_analyzer_10
+# Hinweis: Die CSV-Dateien liegen jetzt im Ordner I:/Download

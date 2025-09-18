@@ -1,6 +1,6 @@
 import os
 import subprocess
-from projektstruktur import erstelle_struktur
+from csv_analyser.projektstruktur import erstelle_struktur
 from git_tools import initialisiere_git_und_push
 from skript_tools import finde_scripts, run_python_script
 import sys

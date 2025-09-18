@@ -10,7 +10,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.backends.backend_pdf import PdfPages
-from csv_analyser.config import CONFIG 
+from csv_analyser.config import CONFIG
 missing_libs = []
 ADVANCED_LIBS_AVAILABLE = True
 
@@ -778,12 +778,26 @@ def erstelle_auswertungsdiagramme(csv_path: str, gps_auswertung: Optional[List[s
 
         # ========== 3. Multi-Boxplot für alle numerischen Spalten ===========
         if len(numeric_cols) > 0:
-            plt.figure(figsize=(12, 6))
-            sns.boxplot(data=df[numeric_cols])  # Standard: vertikal
-            plt.title("Boxplot aller numerischen Spalten")
-            plt.tight_layout()
-            pdf.savefig()
-            plt.close()
+            n = len(numeric_cols)
+            cols_per_page = 4
+            rows_per_page = 2
+            plots_per_page = cols_per_page * rows_per_page
+            for i in range(0, n, plots_per_page):
+                fig, axes = plt.subplots(rows_per_page, cols_per_page, figsize=(16, 8))
+                axes = axes.flatten()
+                for j in range(plots_per_page):
+                    idx = i + j
+                    ax = axes[j]
+                    if idx < n:
+                        col = numeric_cols[idx]
+                        sns.boxplot(x=df[col].dropna(), ax=ax)
+                        ax.set_title(f"Boxplot: {col}", fontsize=10)
+                        ax.set_xlabel(col)
+                    else:
+                        ax.axis('off')
+                plt.tight_layout()
+                pdf.savefig(fig)
+                plt.close(fig)
         pbar.update(1)
 
         # ========== 4. Scatterplots für alle numerischen Spaltenpaare ===========
@@ -918,7 +932,8 @@ if __name__ == "__main__":
     
     import sys
     import glob
-    download_folder = "C:/Users/Frank/Downloads/"
+    # Angepasster Download-Ordner auf Laufwerk I:
+    download_folder = "I:/Downloads/"
     csv_files = glob.glob(download_folder + "*.csv")
     if not csv_files:
         print("❌ Keine CSV-Dateien im Download-Ordner gefunden!")
@@ -942,7 +957,7 @@ if __name__ == "__main__":
     if result:
         print(f"\n🎯 Fertig! Alle Informationen wurden in '{result}' gespeichert.")
         print("\n💡 Das Script kann für jede CSV-Datei verwendet werden:")
-        print("   python csv_analyzer_02.py C:/Users/Frank/Downloads/datei.csv")
+        print("   python csv_analyzer_02.py I:/Downloads/datei.csv")
     else:
         print("\n❌ Analyse konnte nicht abgeschlossen werden.")
 

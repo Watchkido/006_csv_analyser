@@ -37,7 +37,7 @@ def gps_route_auf_karte(csv_path: str, lat_col: str = None, lon_col: str = None,
         out_path = csv_path.rsplit('.', 1)[0] + "_route.html"
     m.save(out_path)
     return out_path
-from csv_analyser.config import CONFIG 
+from csv_analyser.config import CONFIG
 from typing import List
 def amazon_sonderauswertungen(df) -> List[str]:
     """

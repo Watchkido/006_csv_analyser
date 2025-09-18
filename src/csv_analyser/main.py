@@ -13,8 +13,8 @@ from csv_analyser.utils.csv_analyser_utils import lade_csv_robust
 def main():
     """Zeigt alle CSV-Dateien im Downloads-Ordner an und lässt den Nutzer eine auswählen."""
     import glob
-    # Windows-typischer Download-Ordner
-    download_folder = os.path.expanduser("~/Downloads/")
+    # Angepasster Download-Ordner auf Laufwerk I:
+    download_folder = "I:/Download/"
     csv_files = glob.glob(os.path.join(download_folder, "*.csv"))
     if not csv_files:
         print("❌ Keine CSV-Dateien im Download-Ordner gefunden!")
@@ -65,4 +65,7 @@ def main():
 #  führt das Skript aus
 if __name__ == "__main__":
     main()
-# python -m csv_analyser.main
+
+
+
+# Starte immer aus: cd e:\dev\projekt_python_venv\006_csv_analyser\src python -m csv_analyser.main
