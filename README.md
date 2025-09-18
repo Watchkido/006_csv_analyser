@@ -1,19 +1,88 @@
-# Python Projekt Generator
+# 📊 CSV Data Analyzer
 
-Dieses Projekt ist ein flexibler Generator für Python-Projektstrukturen mit integriertem GitHub-Setup und nützlichen Automatisierungen. Es richtet sich an Entwickler, die schnell und standardisiert neue Python-Projekte anlegen möchten – inklusive Best-Practices, Vorlagen und Werkzeugen für einen reibungslosen Start.
+Ein umfassendes Python-Programm zur automatischen Analyse von CSV-Dateien mit erweiterten statistischen Methoden und visuellen Darstellungen.
 
-## Features
+---
 
-- **Automatische Erstellung einer vollständigen Projektstruktur** (src, tests, notebooks, scripts, data, prompts usw.)
-- **Vorlagen für wichtige Dateien** wie `README.md`, `.gitignore`, `requirements.txt`, Lizenz, Beispielmodule und Tests
-- **Git-Initialisierung und optionaler GitHub-Repository-Upload**
-- **GUI zur einfachen Bedienung**
-- **Skriptstarter für vorhandene Python-Skripte**
-- **Projektanalyse-Tools** (z. B. Import-Check, Flake8-Prüfung)
-- **Konfigurierbar über zentrale `config.py`**
+## 🔍 Funktionen
 
-## Schnellstart
+### ✅ Grundlegende Analyse
+- **Datenübersicht**: Shape, Datentypen, Speichernutzung
+- **Deskriptive Statistik**: Mittelwert, Standardabweichung, Quantile, Min/Max
+- **Fehlende Werte**: Identifikation von Null-Werten
+- **Duplikaterkennung**: Findet doppelte Einträge
 
-1. Repository klonen:
+### 📈 Erweiterte statistische Analysen
+- **Korrelationsanalyse**: Pearson-Korrelation zwischen numerischen Spalten
+- **Anomalieerkennung**: Z-Score basierte Ausreißeridentifikation
+- **Verteilungsanalyse**: Schiefe und Kurtosis Berechnung
+- **Regressionsanalyse**: Lineare und multiple Regression
+- **Kategorische Analyse**: Häufigkeitsverteilung für textbasierte Spalten
 
-   git clone https://github.com/Watchkido/python_projekt_generator.git
+### 📊 Visuelle Darstellungen
+- **Histogramme**: Verteilungen aller numerischen Spalten
+- **Boxplots**: Übersicht mit Median und Ausreißern
+- **Streudiagramme**: Korrelationsvisualisierungen
+- **Balkendiagramme**: Für kategorische Variablen
+- **Violinplots**: Kombination aus Boxplot und Dichteverteilung
+
+---
+
+## 🚀 Installation
+
+```bash
+# Erforderliche Abhängigkeiten installieren
+pip install pandas numpy matplotlib seaborn scipy scikit-learn statsmodels
+
+# Repository klonen
+git clone <repository-url>
+cd csv-data-analyzer
+```
+## Beispielausgabe
+
+📊 Shape: 200 Zeilen × 5 Spalten  
+🔢 Gesamt-Datenpunkte: 1,000  
+✅ Keine fehlenden Werte gefunden!
+
+       CustomerID         Age  Annual Income (k$)  Spending Score (1-100)
+count  200.000000  200.000000          200.000000              200.000000
+mean   100.500000   38.850000           60.560000               50.200000
+std     57.879185   13.969007           26.264721               25.823522
+min      1.000000   18.000000           15.000000                1.000000
+max    200.000000   70.000000          137.000000               99.000000
+
+
+## Projektstruktur
+
+csv-data-analyzer/
+├── main.py                 # Hauptprogramm
+├── csv_analyzer.py         # Kernfunktionalität
+├── visualization.py        # Plotting-Funktionen
+├── statistical_tests.py    # Statistische Methoden
+├── requirements.txt        # Abhängigkeiten
+└── examples/               # Beispiel-CSV-Dateien
+---
+## 📈 Unterstützte Dateiformate
+
+✅ CSV (, und | und TAB -getrennt)
+---
+## 📝 Lizenz
+
+MIT License – Sie können das Projekt frei verwenden, modifizieren und verteilen.
+---
+## 🤝 Beitragen
+
+Beiträge sind willkommen! Bitte erstellen Sie einen Pull Request oder öffnen Sie ein Issue für Verbesserungsvorschläge.
+---
+## 📊 Beispiel-Dashboard
+Das Programm generiert automatisch ein umfassendes Analysis-Dashboard mit:
+Zusammenfassung der Datenqualität
+Statistischen Kennzahlen
+Visuellen Darstellungen
+Exportfunktion für Berichte (PDF/HTML)
+
+
+Hinweis: Dieses Tool ist für analytische Zwecke konzipiert und ersetzt nicht die fachliche Interpretation der Ergebnisse durch Domain-Experten.
+
+
+
