@@ -1,0 +1,97 @@
+📄 Alle Dateien und Ordner:
+├── prompts
+│   ├── prompt01.txt
+│   ├── prompt02.txt
+│   └── prompt03.txt
+├── src
+│   ├── csv_analyser
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-313.pyc
+│   │   │   ├── config.cpython-313.pyc
+│   │   │   ├── csv_analyser.cpython-313.pyc
+│   │   │   ├── csv_analyzer_10.cpython-313.pyc
+│   │   │   ├── funktionen.cpython-313.pyc
+│   │   │   ├── gps_analysis.cpython-313.pyc
+│   │   │   ├── main.cpython-313.pyc
+│   │   │   ├── projekt_analyse.cpython-313.pyc
+│   │   │   └── projektstruktur.cpython-313.pyc
+│   │   ├── utils
+│   │   │   ├── __pycache__
+│   │   │   │   ├── __init__.cpython-313.pyc
+│   │   │   │   ├── csv_analyser_utils.cpython-313.pyc
+│   │   │   │   └── konstanten.cpython-313.pyc
+│   │   │   ├── __init__.py
+│   │   │   ├── csv_analyser_utils.py
+│   │   │   └── konstanten.py
+│   │   ├── __init__.py
+│   │   ├── config.py
+│   │   ├── csv_analyser.py
+│   │   ├── csv_analyzer_10.py
+│   │   ├── csv_analyzer_11_amazon_datensatz.py
+│   │   ├── gps_analysis.py
+│   │   ├── gui.py
+│   │   ├── import_analyse_ergebnis.txt
+│   │   ├── logging_config.py
+│   │   ├── main.py
+│   │   ├── projekt_analyse.py
+│   │   └── sensordatei lesen mit numpy alle sensoren auf karte.py
+│   └── import_analyse_ergebnis.txt
+├── agent.md
+├── claude.md
+├── copilot_instruction.md
+├── coursroles.md
+├── LICENSE
+├── pyproject.toml
+├── README.md
+├── requirements-dev.txt
+└── requirements.txt
+
+🔗 Verwendete Dateien (ab main.py):
+✔ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser\config.py
+✔ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser\csv_analyser.py
+✔ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser\csv_analyzer_10.py
+✔ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser\gps_analysis.py
+✔ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser\main.py
+✔ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser\utils\csv_analyser_utils.py
+
+🧹 Nicht verwendete Dateien:
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser\csv_analyzer_11_amazon_datensatz.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser\gui.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser\logging_config.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser\projekt_analyse.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser\sensordatei lesen mit numpy alle sensoren auf karte.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser\__init__.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser\utils\konstanten.py
+❌ E:\dev\projekt_python_venv\006_CSV_Analyser\src\csv_analyser\utils\__init__.py
+
+📚 Verwendete Bibliotheken/Imports:
+• .csv_analyzer_10
+• .gps_analysis
+• .konstanten
+• PIL
+• csv_analyser.config
+• csv_analyser.csv_analyser
+• csv_analyser.csv_analyzer_10
+• csv_analyser.gps_analysis
+• csv_analyser.utils
+• csv_analyser.utils.csv_analyser_utils
+• datetime
+• folium
+• glob
+• math
+• matplotlib.backends.backend_pdf
+• matplotlib.pyplot
+• numpy
+• os
+• pandas
+• scipy.stats
+• seaborn
+• sklearn.linear_model
+• statsmodels.api
+• sys
+• tempfile
+• time
+• tqdm
+• types
+• typing
+• warnings

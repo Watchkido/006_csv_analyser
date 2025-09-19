@@ -48,6 +48,15 @@ def finde_python_dateien(root: str) -> list[str]:
         >>> finde_python_dateien("meinprojekt")
         ['meinprojekt/main.py', 'meinprojekt/data/dataset.py', 'meinprojekt/notebooks/auswertung.py']
     """
+    ergebnis = []
+    for ordner, unterordner, dateien in os.walk(root):
+        # .venv und versteckte Ordner ignorieren
+        if any([os.path.basename(ordner).startswith("."), os.path.basename(ordner) == ".venv"]):
+            continue
+        for datei in dateien:
+            if datei.endswith(".py") and not datei.startswith("."):
+                ergebnis.append(os.path.join(ordner, datei))
+    return ergebnis
 """
 projekt_analyse.py
 
@@ -131,9 +140,10 @@ def extrahiere_imports(dateipfad):
             match_import = re.match(r'^\s*import\s+([\w\.]+)', zeile)
             match_from = re.match(r'^\s*from\s+([\w\.]+)', zeile)
             if match_import:
-                imports.add(match_import.group(1).split('.')[0])
+                # Kompletter Modulpfad
+                imports.add(match_import.group(1))
             elif match_from:
-                imports.add(match_from.group(1).split('.')[0])
+                imports.add(match_from.group(1))
     return imports
 
 def schreibe_kompletten_verzeichnisbaum(dateipfad: str, wurzelverzeichnis: str) -> None:
@@ -180,20 +190,40 @@ def analysiere_imports(py_dateien):
     :param py_dateien: Liste aller Python-Dateien
     :return: (modulnamen_to_dateien, verwendet_von, nicht_verwendet)
     """
-    modulnamen_to_dateien = {os.path.splitext(os.path.basename(f))[0]: f for f in py_dateien}
-    verwendete_module = set()
-    verwendet_von = defaultdict(list)
+    # Mapping: Modulpfad zu Datei
+    modulpfad_to_datei = {}
+    for f in py_dateien:
+        rel_path = os.path.relpath(f)
+        parts = rel_path.replace(".py","").replace(os.sep,".").split(".")
+        # z.B. src.csv_analyser.utils.csv_analyser_utils
+        # Suche ab erstem Paketnamen
+        idx = 0
+        for i, p in enumerate(parts):
+            if p == "csv_analyser":
+                idx = i
+                break
+        modulpfad = ".".join(parts[idx:])
+        modulpfad_to_datei[modulpfad] = f
+        # auch Kurzname für Hauptmodule
+        modulpfad_to_datei[parts[-1]] = f
 
-    for datei in py_dateien:
-        imports = extrahiere_imports(datei)
+    verwendete_dateien = set()
+    def track_imports(dateiname):
+        if dateiname in verwendete_dateien:
+            return
+        verwendete_dateien.add(dateiname)
+        imports = extrahiere_imports(dateiname)
         for imp in imports:
-            if imp in modulnamen_to_dateien:
-                verwendete_module.add(imp)
-                verwendet_von[imp].append(datei)
-    
-    nicht_verwendet = [f for name, f in modulnamen_to_dateien.items() if name not in verwendete_module]
-    
-    return modulnamen_to_dateien, verwendet_von, nicht_verwendet
+            imp_file = modulpfad_to_datei.get(imp)
+            if imp_file:
+                track_imports(imp_file)
+    # Starte bei main.py
+    main_file = modulpfad_to_datei.get("main")
+    if main_file:
+        track_imports(main_file)
+    verwendete_liste = sorted(verwendete_dateien)
+    nicht_verwendet = [f for f in py_dateien if f not in verwendete_dateien]
+    return verwendete_liste, nicht_verwendet
 
 # -------------------------------------------
 # ✅ Flake8-Analyse
@@ -240,49 +270,44 @@ def hauptfunktion(startverzeichnis: str) -> None:
 
     # Alle Python-Dateien im Projekt finden
     py_dateien = finde_python_dateien(startverzeichnis)
-    # Importbeziehungen analysieren
-    alle_module, verwendet_von, nicht_genutzt = analysiere_imports(py_dateien)
+    verwendete_liste, nicht_genutzt = analysiere_imports(py_dateien)
 
-    # Ausgabe der gefundenen Dateien (Konsole)
-    print("📄 Gefundene Python-Dateien:")
-    for modul, pfad in alle_module.items():
-        print(f"  {modul:<20} → {pfad}")
+    print("\n� Verwendete Dateien (ab main.py):")
+    for pfad in verwendete_liste:
+        print(f"  ✔ {pfad}")
 
-    # Ausgabe der verwendeten Module (Konsole)
-    print("\n🔗 Importierte Module (aus Projekt):")
-    for modul, verwendet_durch in verwendet_von.items():
-        print(f"  {modul:<20} verwendet in:")
-        for nutzer in verwendet_durch:
-            print(f"     └── watchkido")
-
-    # Ausgabe der nicht verwendeten Dateien (Konsole)
     print("\n🧹 Nicht verwendete .py-Dateien:")
     for pfad in nicht_genutzt:
         print(f"  ❌ {pfad}")
 
-    # Schreibe den vollständigen Verzeichnisbaum (ohne .-Ordner) in die Ergebnisdatei
+    # Alle verwendeten Bibliotheken (Imports) sammeln
+    verwendete_imports = set()
+    for pfad in verwendete_liste:
+        verwendete_imports.update(extrahiere_imports(pfad))
+    print("\n📚 Verwendete Bibliotheken/Imports:")
+    for imp in sorted(verwendete_imports):
+        print(f"  • {imp}")
+
     schreibe_kompletten_verzeichnisbaum("import_analyse_ergebnis.txt", startverzeichnis)
 
-    # Ergebnisse in Datei speichern (weitere Details)
     with open("import_analyse_ergebnis.txt", "a", encoding="utf-8") as f:
-        f.write("\n🔗 Verwendete Module:\n")
-        for modul, verwendet_durch in verwendet_von.items():
-            f.write(f"{modul} verwendet in:\n")
-            for nutzer in verwendet_durch:
-                f.write(f"  └── watchkido\n")
+        f.write("\n🔗 Verwendete Dateien (ab main.py):\n")
+        for pfad in verwendete_liste:
+            f.write(f"✔ {pfad}\n")
         f.write("\n🧹 Nicht verwendete Dateien:\n")
         for pfad in nicht_genutzt:
             f.write(f"❌ {pfad}\n")
-
-    # Baumdarstellung der Modulabhängigkeiten (Konsolenausgabe)
-    print_verwendete_module(verwendet_von)
+        f.write("\n📚 Verwendete Bibliotheken/Imports:\n")
+        for imp in sorted(verwendete_imports):
+            f.write(f"• {imp}\n")
 
     # Flake8-Analyse durchführen
     flake8_pruefen(py_dateien)
-    print("\n✅ Analyse abgeschlossen. Ergebnisse gespeichert in 'import_analyse_ergebnis.txt'")# 🏁 Ausführung
+    print("\n✅ Analyse abgeschlossen. Ergebnisse gespeichert in 'import_analyse_ergebnis.txt'")
 # -------------------------------------------
 
 if __name__ == "__main__":
     # Startet die Analyse mit dem in der Konfiguration hinterlegten Basis-Pfad
     hauptfunktion(CONFIG.PROJEKT_PFAD)
     #print_verwendete_module(verwendet_von)
+    # python -m csv_analyser.projekt_analyse

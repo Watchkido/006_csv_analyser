@@ -723,7 +723,9 @@ def erstelle_auswertungsdiagramme(csv_path: str, gps_auswertung: Optional[List[s
                 cmap="coolwarm",
                 fmt="",
                 annot_kws={"size": 6},
-                cbar_kws={"shrink": 0.8}
+                cbar_kws={"shrink": 0.8},
+                vmin=-1,
+                vmax=1
             )
             plt.title("Korrelation zwischen numerischen Spalten")
             plt.tight_layout()
@@ -732,6 +734,8 @@ def erstelle_auswertungsdiagramme(csv_path: str, gps_auswertung: Optional[List[s
         pbar.update(1)
 
         # Hilfsfunktion: Plots in 8er-Gruppen auf DIN A4 (2x4) Subplots
+        import tempfile
+        from PIL import Image
         def plot_grid(plots, titles, kind="line", x=None, y=None, xlabel=None, ylabel=None):
             n = len(plots)
             for i in range(0, n, 8):
@@ -766,8 +770,24 @@ def erstelle_auswertungsdiagramme(csv_path: str, gps_auswertung: Optional[List[s
                         ax.text(0.5, 0.5, f"Fehler: {e}", ha="center", va="center", fontsize=8)
                         ax.axis('off')
                 plt.tight_layout()
-                pdf.savefig(fig)
-                plt.close(fig)
+                # Speichere das Diagramm als PNG
+                import time
+                with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
+                    fig.savefig(tmpfile.name, dpi=150, bbox_inches="tight")
+                    plt.close(fig)
+                    # Füge das PNG als Bildseite in die PDF ein
+                    img = Image.open(tmpfile.name)
+                    fig_img = plt.figure(figsize=(11.7, 8.3))
+                    plt.imshow(img)
+                    plt.axis('off')
+                    pdf.savefig(fig_img)
+                    plt.close(fig_img)
+                    img.close()
+                    time.sleep(0.1)  # Warten, bis Windows die Datei freigibt
+                    try:
+                        os.remove(tmpfile.name)
+                    except PermissionError:
+                        print(f"WARNUNG: PNG konnte nicht gelöscht werden: {tmpfile.name}")
 
         # ========== 2. Histogramme für numerische Spalten ===========
         numeric_cols = df.select_dtypes(include=[np.number]).columns
@@ -777,6 +797,9 @@ def erstelle_auswertungsdiagramme(csv_path: str, gps_auswertung: Optional[List[s
         pbar.update(1)
 
         # ========== 3. Multi-Boxplot für alle numerischen Spalten ===========
+        import tempfile
+        from PIL import Image
+        import time
         if len(numeric_cols) > 0:
             n = len(numeric_cols)
             cols_per_page = 4
@@ -790,14 +813,38 @@ def erstelle_auswertungsdiagramme(csv_path: str, gps_auswertung: Optional[List[s
                     ax = axes[j]
                     if idx < n:
                         col = numeric_cols[idx]
-                        sns.boxplot(x=df[col].dropna(), ax=ax)
+                        daten = df[col].dropna()
+                        use_log = False
+                        if len(daten) > 0:
+                            median = np.median(daten)
+                            max_val = np.max(daten)
+                            if median > 0 and max_val / median > 100:
+                                use_log = True
+                        sns.boxplot(x=daten, ax=ax)
                         ax.set_title(f"Boxplot: {col}", fontsize=10)
                         ax.set_xlabel(col)
+                        if use_log:
+                            ax.set_yscale("log")
+                            ax.set_xlabel(f"{col} (logarithmisch)")
                     else:
                         ax.axis('off')
                 plt.tight_layout()
-                pdf.savefig(fig)
-                plt.close(fig)
+                # Speichere das Diagramm als PNG und füge es als Bildseite ein
+                with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
+                    fig.savefig(tmpfile.name, dpi=150, bbox_inches="tight")
+                    plt.close(fig)
+                    img = Image.open(tmpfile.name)
+                    fig_img = plt.figure(figsize=(16, 8))
+                    plt.imshow(img)
+                    plt.axis('off')
+                    pdf.savefig(fig_img)
+                    plt.close(fig_img)
+                    img.close()
+                    time.sleep(0.1)
+                    try:
+                        os.remove(tmpfile.name)
+                    except PermissionError:
+                        print(f"WARNUNG: PNG konnte nicht gelöscht werden: {tmpfile.name}")
         pbar.update(1)
 
         # ========== 4. Scatterplots für alle numerischen Spaltenpaare ===========
