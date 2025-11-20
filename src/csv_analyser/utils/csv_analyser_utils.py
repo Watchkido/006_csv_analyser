@@ -10,7 +10,7 @@ def gps_route_auf_karte(csv_path: str, lat_col: str = None, lon_col: str = None,
     :return: Pfad zur erzeugten HTML-Datei
     """
     import pandas as pd
-    df = pd.read_csv(csv_path)
+    df = lade_csv_robust(csv_path)
     # Spalten automatisch erkennen, falls nicht angegeben
     if not lat_col:
         for c in df.columns:
@@ -228,32 +228,113 @@ def bibliotheken_check_ausgabe():
 
 def lade_csv_robust(csv_filepath: str) -> pd.DataFrame:
     """
-    Lädt eine CSV-Datei robust mit verschiedenen Methoden.
+    Lädt eine CSV-Datei robust mit verschiedenen Methoden und automatischer Fehlerbehandlung.
+    
     :param csv_filepath: Pfad zur CSV-Datei
     :returns: Geladener DataFrame
     :raises Exception: Wenn keine Methode erfolgreich ist
+    
+    Diese Funktion versucht verschiedene Strategien:
+    1. Standard CSV mit Komma-Separator
+    2. Automatische Separator-Erkennung
+    3. Semikolon-Separator
+    4. Python-Engine mit flexibler Erkennung
+    5. Fehlerhafte Zeilen überspringen (on_bad_lines='skip')
+    6. Fehlerhafte Zeilen überspringen mit alternativen Separatoren
+    7. Manuelle Zeilenweise-Verarbeitung mit Fehlertoleranz
     """
+    import pandas as pd
+    import warnings
+    
+    # Versuch 1: Standard CSV mit Komma
     try:
-        df = pd.read_csv(csv_filepath, sep=',')
+        df = pd.read_csv(csv_filepath, sep=',', encoding='utf-8')
+        print(f"✅ CSV geladen mit Standard-Komma-Separator ({len(df)} Zeilen)")
+        return df
+    except (pd.errors.ParserError, UnicodeDecodeError) as e:
+        print(f"⚠️  Standard-Methode fehlgeschlagen: {e}")
+    
+    # Versuch 2: Automatische Separator-Erkennung
+    try:
+        df = pd.read_csv(csv_filepath, encoding='utf-8')
+        print(f"✅ CSV geladen mit automatischer Erkennung ({len(df)} Zeilen)")
+        return df
+    except (pd.errors.ParserError, UnicodeDecodeError):
+        pass
+    
+    # Versuch 3: Semikolon-Separator
+    try:
+        df = pd.read_csv(csv_filepath, sep=';', encoding='utf-8')
+        print(f"✅ CSV geladen mit Semikolon-Separator ({len(df)} Zeilen)")
+        return df
+    except (pd.errors.ParserError, UnicodeDecodeError):
+        pass
+    
+    # Versuch 4: Python-Engine mit flexibler Separator-Erkennung
+    try:
+        df = pd.read_csv(csv_filepath, sep=None, engine='python', encoding='utf-8')
+        print(f"✅ CSV geladen mit Python-Engine ({len(df)} Zeilen)")
+        return df
+    except (pd.errors.ParserError, UnicodeDecodeError):
+        pass
+    
+    # Versuch 5: Fehlerhafte Zeilen überspringen (Komma)
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            df = pd.read_csv(csv_filepath, sep=',', on_bad_lines='skip', encoding='utf-8')
+        print(f"⚠️  CSV geladen mit übersprungenen fehlerhaften Zeilen ({len(df)} Zeilen)")
+        return df
+    except (pd.errors.ParserError, UnicodeDecodeError):
+        pass
+    
+    # Versuch 6: Fehlerhafte Zeilen überspringen (Semikolon)
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            df = pd.read_csv(csv_filepath, sep=';', on_bad_lines='skip', encoding='utf-8')
+        print(f"⚠️  CSV geladen mit übersprungenen fehlerhaften Zeilen ({len(df)} Zeilen)")
+        return df
+    except (pd.errors.ParserError, UnicodeDecodeError):
+        pass
+    
+    # Versuch 7: Alternative Kodierung (latin-1)
+    try:
+        df = pd.read_csv(csv_filepath, sep=',', on_bad_lines='skip', encoding='latin-1')
+        print(f"⚠️  CSV geladen mit latin-1 Kodierung ({len(df)} Zeilen)")
         return df
     except pd.errors.ParserError:
-        try:
-            df = pd.read_csv(csv_filepath)
-            return df
-        except pd.errors.ParserError:
+        pass
+    
+    # Versuch 8: Letzte Rettung - Zeile für Zeile mit maximaler Fehlertoleranz
+    try:
+        with open(csv_filepath, 'r', encoding='utf-8', errors='ignore') as f:
+            lines = f.readlines()
+        
+        # Erste Zeile als Header
+        header = lines[0].strip().split(',')
+        data_rows = []
+        skipped_lines = 0
+        
+        for i, line in enumerate(lines[1:], start=2):
             try:
-                df = pd.read_csv(csv_filepath, sep=';')
-                return df
-            except pd.errors.ParserError:
-                try:
-                    df = pd.read_csv(csv_filepath, sep=None, engine='python')
-                    return df
-                except pd.errors.ParserError:
-                    try:
-                        df = pd.read_csv(csv_filepath, on_bad_lines='skip')
-                        return df
-                    except pd.errors.ParserError:
-                        raise Exception("CSV-Datei konnte nicht geladen werden")
+                # Versuche, die Zeile zu parsen
+                values = line.strip().split(',')
+                # Passe die Anzahl der Werte an den Header an
+                if len(values) < len(header):
+                    values.extend([''] * (len(header) - len(values)))
+                elif len(values) > len(header):
+                    values = values[:len(header)]
+                data_rows.append(values)
+            except Exception:
+                skipped_lines += 1
+                continue
+        
+        df = pd.DataFrame(data_rows, columns=header)
+        print(f"⚠️  CSV manuell geladen ({len(df)} Zeilen, {skipped_lines} fehlerhafte Zeilen übersprungen)")
+        return df
+    except Exception as e:
+        raise Exception(f"❌ CSV-Datei konnte mit keiner Methode geladen werden: {e}")
 
 
 def erstelle_info_content(df: pd.DataFrame, csv_filepath: str) -> List[str]:
@@ -624,7 +705,7 @@ def advanced_statistics_analysis(df: pd.DataFrame) -> List[str]:
         analysis_results.append(f"❌ Explorative Analyse fehlgeschlagen: {str(e)}")
 
     # 3. PRÄDIKTIVE STATISTIK - Einfache Regression
-    analysis_results.append("\n� PRÄDIKTIVE STATISTIK - REGRESSIONSANALYSE")
+    analysis_results.append("\n🔮 PRÄDIKTIVE STATISTIK - REGRESSIONSANALYSE")
     analysis_results.append("-" * 50)
     analysis_results.append(explanations['regression'])
     try:
@@ -704,7 +785,7 @@ def advanced_statistics_analysis(df: pd.DataFrame) -> List[str]:
             df_temp = df_temp.dropna(subset=[date_col, numeric_col])
             if len(df_temp) > 5:
                 df_temp = df_temp.sort_values(date_col)
-                df_temp['time_numeric'] = (df_temp[date_col] - df_temp[date_col].min()).dt.total_seconds() / 86400.0
+                df_temp['time_numeric'] = (df_temp[date_col] - df_temp[date_col].min()).dt.days
                 X = df_temp[['time_numeric']].values
                 y = df_temp[numeric_col].values
                 if len(X) > 2 and LinearRegression is not None:
@@ -720,218 +801,6 @@ def advanced_statistics_analysis(df: pd.DataFrame) -> List[str]:
                     analysis_results.append(f"📈 Trend für {numeric_col}: {trend_direction} (Steigung: {trend_slope:.6f}/Tag)")
                 else:
                     analysis_results.append("❌ scikit-learn (LinearRegression) nicht verfügbar für Zeitreihen-Trend")
-        else:
-            analysis_results.append("📅 Keine Datumsspalten für Zeitreihenanalyse gefunden")
-    except Exception as e:
-        analysis_results.append(f"❌ Zeitreihenanalyse fehlgeschlagen: {str(e)}")
-
-    # 7. PRÄSKRIPTIVE STATISTIK - Einfache Optimierungsempfehlung
-    analysis_results.append("\n🎯 PRÄSKRIPTIVE STATISTIK - OPTIMIERUNGSEMPFEHLUNGEN")
-    analysis_results.append("-" * 50)
-    analysis_results.append(explanations['optimierung'])
-    try:
-        if len(numeric_cols) >= 2:
-            target_col = numeric_cols[0]
-            recommendations = []
-            for col in numeric_cols[1:3]:
-                corr = df[[target_col, col]].corr().iloc[0, 1]
-                try:
-                    if np.issubdtype(type(corr), np.number) and abs(corr) > 0.5:
-                        if corr > 0:
-                            recommendations.append(f"Steigere {col} → {target_col} steigt (Korr={corr:.2f})")
-                        else:
-                            recommendations.append(f"Reduziere {col} → {target_col} steigt (Korr={corr:.2f})")
-                except Exception:
-                    continue
-            if recommendations:
-                analysis_results.extend(recommendations)
-            else:
-                analysis_results.append("Keine starken Einflussfaktoren gefunden.")
-    except Exception as e:
-        analysis_results.append(f"❌ Präskriptive Analyse fehlgeschlagen: {str(e)}")
-
-    return analysis_results
-
-    if len(numeric_cols) < 2:
-        analysis_results.append(
-            "⚠️ Mindestens 2 numerische Spalten für erweiterte Analysen erforderlich"
-        )
-        return analysis_results
-
-    # 1. FORENSISCHE STATISTIK - Anomalieerkennung
-    analysis_results.append("\n🔍 FORENSISCHE STATISTIK - ANOMALIEERKENNUNG")
-    analysis_results.append("-" * 50)
-    analysis_results.append(explanations['anomalie'])
-    try:
-        for col in numeric_cols[:3]:
-            if df[col].std() > 0:
-                if 'zscore' in globals() and zscore is not None:
-                    z_scores = np.abs(zscore(df[col].dropna()))
-                    anomalies = np.sum(z_scores > 3)
-                    if anomalies > 0:
-                        anomaly_percentage = (anomalies / len(df)) * 100
-                        analysis_results.append(
-                            f"🚨 {col}: {anomalies} Anomalien "
-                            f"({anomaly_percentage:.1f}%) mit |z-score| > 3"
-                        )
-                    else:
-                        analysis_results.append(
-                            f"✅ {col}: Keine Anomalien gefunden"
-                        )
-                else:
-                    analysis_results.append("❌ scipy (zscore) nicht verfügbar für Anomalieerkennung")
-    except Exception as e:
-        analysis_results.append(f"❌ Forensische Analyse fehlgeschlagen: {str(e)}")
-
-    # 2. EXPLORATIVE STATISTIK - Verteilungsanalyse
-    analysis_results.append("\n🧭 EXPLORATIVE STATISTIK - VERTEILUNGSANALYSE")
-    analysis_results.append("-" * 50)
-    analysis_results.append(explanations['verteilung'])
-    try:
-        for col in numeric_cols[:3]:
-            data = df[col].dropna()
-            if len(data) > 0:
-                skewness = data.skew()
-                kurtosis = data.kurtosis()
-                if abs(skewness) < 0.5:
-                    skew_interpretation = "symmetrisch"
-                elif skewness > 0.5:
-                    skew_interpretation = "rechtsschief"
-                else:
-                    skew_interpretation = "linksschief"
-                if kurtosis > 3:
-                    kurt_interpretation = "spitz (leptokurtisch)"
-                elif kurtosis < 3:
-                    kurt_interpretation = "flach (platykurtisch)"
-                else:
-                    kurt_interpretation = "normal (mesokurtisch)"
-                analysis_results.append(
-                    f"📊 {col}: Schiefe={skewness:.3f} ({skew_interpretation}), "
-                    f"Kurtosis={kurtosis:.3f} ({kurt_interpretation})"
-                )
-    except Exception as e:
-        analysis_results.append(
-            f"❌ Explorative Analyse fehlgeschlagen: {str(e)}"
-        )
-
-    # 3. PRÄDIKTIVE STATISTIK - Einfache Regression
-    analysis_results.append("\n🔮 PRÄDIKTIVE STATISTIK - REGRESSIONSANALYSE")
-    analysis_results.append("-" * 50)
-    analysis_results.append(explanations['regression'])
-    try:
-        if len(numeric_cols) >= 2:
-            X_col = numeric_cols[0]
-            y_col = numeric_cols[1]
-            valid_data = df[[X_col, y_col]].dropna()
-            if len(valid_data) > 5:
-                X = valid_data[[X_col]].values
-                y = valid_data[y_col].values
-                if 'LinearRegression' in globals() and LinearRegression is not None:
-                    model = LinearRegression()
-                    model.fit(X, y)
-                    r_squared = model.score(X, y)
-                    coef = model.coef_[0]
-                    intercept = model.intercept_
-                    analysis_results.append(
-                        f"📈 {y_col} = {intercept:.3f} + {coef:.3f} × {X_col}"
-                    )
-                    analysis_results.append(
-                        f"📊 R² = {r_squared:.3f} (Erklärte Varianz: {r_squared*100:.1f}%)"
-                    )
-                    mean_x = X.mean()
-                    prediction = model.predict(np.array([[mean_x]]))[0]
-                    analysis_results.append(
-                        f"🎯 Prognose für {X_col}={mean_x:.2f}: {y_col}={prediction:.2f}"
-                    )
-                else:
-                    analysis_results.append("❌ scikit-learn (LinearRegression) nicht verfügbar für Regression")
-            else:
-                analysis_results.append("⚠️ Zu wenige Datenpunkte für Regression")
-    except Exception as e:
-        analysis_results.append(f"❌ Prädiktive Analyse fehlgeschlagen: {str(e)}")
-
-    # 4. DIAGNOSTISCHE STATISTIK - Korrelationsanalyse
-    analysis_results.append("\n🧠 DIAGNOSTISCHE STATISTIK - KORRELATIONEN")
-    analysis_results.append("-" * 50)
-    analysis_results.append(explanations['korrelation'])
-    try:
-        if len(numeric_cols) >= 2:
-            corr_matrix = df[numeric_cols].corr()
-            high_corr_pairs = []
-            for i in range(len(numeric_cols)):
-                for j in range(i+1, len(numeric_cols)):
-                    corr_val = corr_matrix.iloc[i, j]
-                    if abs(corr_val) > 0.5:
-                        high_corr_pairs.append(
-                            f"{numeric_cols[i]} ↔ {numeric_cols[j]}: r={corr_val:.3f}"
-                        )
-            if high_corr_pairs:
-                analysis_results.extend(high_corr_pairs[:5])
-            else:
-                analysis_results.append("📊 Keine starken Korrelationen (|r| > 0.5) gefunden")
-    except Exception as e:
-        analysis_results.append(f"❌ Diagnostische Analyse fehlgeschlagen: {str(e)}")
-
-    # 5. KAUSALE STATISTIK - Regressionsmodell mit Statistiken
-    analysis_results.append("\n🔄 KAUSALE STATISTIK - REGRESSIONSSTATISTIKEN")
-    analysis_results.append("-" * 50)
-    analysis_results.append(explanations['multi_regression'])
-    try:
-        if len(numeric_cols) >= 3:
-            target_col = numeric_cols[0]
-            feature_cols = numeric_cols[1:3]
-            valid_data = df[numeric_cols[:3]].dropna()
-            if len(valid_data) > 10:
-                X = valid_data[feature_cols]
-                y = valid_data[target_col]
-                if 'LinearRegression' in globals() and LinearRegression is not None:
-                    model = LinearRegression()
-                    model.fit(X, y)
-                    r_squared = model.score(X, y)
-                    analysis_results.append(
-                        f"📈 {target_col} ~ {feature_cols[0]} + {feature_cols[1]}: R²={r_squared:.3f}"
-                    )
-                else:
-                    analysis_results.append("❌ scikit-learn (LinearRegression) nicht verfügbar für multiple Regression")
-            else:
-                analysis_results.append("⚠️ Zu wenige Datenpunkte für multiple Regression")
-    except Exception as e:
-        analysis_results.append(f"❌ Kausale Analyse fehlgeschlagen: {str(e)}")
-
-    # 6. ZEITREIHENANALYSE (falls Datumsspalte vorhanden)
-    analysis_results.append("\n⏳ ZEITREIHENANALYSE")
-    analysis_results.append("-" * 50)
-    analysis_results.append(explanations['zeitreihe'])
-    try:
-        date_cols = [col for col in df.columns if any(kw in col.lower() for kw in ["date", "zeit", "time", "stamp", "tag", "datum"])]
-        if date_cols and len(numeric_cols) > 0:
-            date_col = date_cols[0]
-            numeric_col = numeric_cols[0]
-            df_temp = df.copy()
-            df_temp[date_col] = pd.to_datetime(df_temp[date_col], errors='coerce')
-            df_temp = df_temp.dropna(subset=[date_col, numeric_col])
-            if len(df_temp) > 5:
-                df_temp = df_temp.sort_values(date_col)
-                df_temp['time_numeric'] = (df_temp[date_col] - df_temp[date_col].min()).dt.days
-                X = df_temp[['time_numeric']].values
-                y = df_temp[numeric_col].values
-                if len(X) > 2 and 'LinearRegression' in globals() and LinearRegression is not None:
-                    model = LinearRegression()
-                    model.fit(X, y)
-                    trend_slope = model.coef_[0]
-                    if abs(trend_slope) < 0.001:
-                        trend_direction = "stabil"
-                    elif trend_slope > 0:
-                        trend_direction = "steigend"
-                    else:
-                        trend_direction = "fallend"
-                    analysis_results.append(
-                        f"📈 Trend für {numeric_col}: {trend_direction} (Steigung: {trend_slope:.6f}/Tag)"
-                    )
-                else:
-                    analysis_results.append("❌ scikit-learn (LinearRegression) nicht verfügbar für Zeitreihen-Trend")
-            else:
-                analysis_results.append("⚠️ Zu wenige Datenpunkte für Zeitreihenanalyse")
         else:
             analysis_results.append("📅 Keine Datumsspalten für Zeitreihenanalyse gefunden")
     except Exception as e:

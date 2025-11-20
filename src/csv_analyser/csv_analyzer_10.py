@@ -4,6 +4,9 @@ from typing import Optional, List
 
 
 import os
+import gc
+import time
+import tempfile
 import numpy as np
 import pandas as pd
 from datetime import datetime
@@ -11,6 +14,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.backends.backend_pdf import PdfPages
 from csv_analyser.config import CONFIG
+from csv_analyser.utils.csv_analyser_utils import lade_csv_robust
 missing_libs = []
 ADVANCED_LIBS_AVAILABLE = True
 
@@ -326,71 +330,8 @@ def csv_info_extractor(csv_filepath):
     und speichert sie in eine _info.txt-Datei und erstellt zusätzlich eine PDF-Auswertung.
     """
     try:
-        # CSV-Datei robuster laden mit verschiedenen Methoden
-        df = None
-        
-        # Methode 1: Standard CSV-Laden (Komma-separiert)
-        try:
-            df = pd.read_csv(csv_filepath, sep=',')
-            print("✅ CSV mit Komma-Trennung geladen")
-        except pd.errors.ParserError:
-            print("⚠️ Komma-Parser fehlgeschlagen, versuche alternative Methoden...")
-            
-            # Methode 2: Standard ohne explizites Trennzeichen
-            try:
-                df = pd.read_csv(csv_filepath)
-                print("✅ CSV mit Standard-Einstellungen geladen")
-            except pd.errors.ParserError:
-               
-                # Methode 3: Mit Semikolon als Trennzeichen
-                try:
-                    df = pd.read_csv(csv_filepath, sep=';')
-                    print("✅ CSV mit Semikolon-Trennung geladen")
-                except pd.errors.ParserError:
-               
-                    # Methode 4: Automatische Trennzeichen-Erkennung
-                    try:
-                        df = pd.read_csv(csv_filepath, sep=None, engine='python')
-                        print("✅ CSV mit automatischer Trennzeichen-Erkennung geladen")
-                    except pd.errors.ParserError:
-                        
-                        # Methode 5: Mit error_bad_lines=False (ignoriert problematische Zeilen)
-                        try:
-                            df = pd.read_csv(csv_filepath, on_bad_lines='skip')
-                            print("✅ CSV geladen (problematische Zeilen übersprungen)")
-                        except pd.errors.ParserError:
-                            
-                            # Methode 6: Als Text einlesen und erste Zeilen analysieren
-                            print("🔍 Analysiere Datei-Struktur manuell...")
-                            with open(csv_filepath, 'r', encoding='utf-8') as f:
-                                lines = f.readlines()[:10]  # Erste 10 Zeilen
-                            
-                            print("📋 Erste 10 Zeilen der Datei:")
-                            for i, line in enumerate(lines):
-                                print(f"  {i+1:2d}: {line.strip()}")
-                            
-                            # Häufigste Trennzeichen ermitteln
-                            separators = [',', ';', '\t', '|', ' ']
-                            sep_counts = {}
-                            for sep in separators:
-                                count = sum(line.count(sep) for line in lines)
-                                if count > 0:
-                                    sep_counts[sep] = count
-                            
-                            if sep_counts:
-                                best_sep = max(sep_counts, key=sep_counts.get)
-                                print(f"🎯 Erkanntes Trennzeichen: '{best_sep}' ({sep_counts[best_sep]} Vorkommen)")
-                                
-                                try:
-                                    df = pd.read_csv(csv_filepath, sep=best_sep, on_bad_lines='skip')
-                                    print("✅ CSV mit erkanntem Trennzeichen geladen")
-                                except:
-                                    raise Exception("Alle CSV-Parsing-Methoden fehlgeschlagen")
-                            else:
-                                raise Exception("Kein gültiges Trennzeichen erkannt")
-        
-        if df is None:
-            raise Exception("CSV-Datei konnte nicht geladen werden")
+        # CSV-Datei mit robuster Lade-Funktion laden
+        df = lade_csv_robust(csv_filepath)
         
         # Output-Dateiname erstellen
         base_name = os.path.splitext(csv_filepath)[0]
@@ -653,11 +594,8 @@ def erstelle_auswertungsdiagramme(csv_path: str, gps_auswertung: Optional[List[s
     Die Funktion ist robust gegenüber unterschiedlichen CSV-Strukturen.
     Fügt am Ende eine Textseite mit GPS-Auswertung hinzu, falls vorhanden.
     """
-    # CSV einlesen (Datumsspalte wird, falls vorhanden, als datetime geparst)
-    try:
-        df = pd.read_csv(csv_path, parse_dates=["datetime"])
-    except Exception:
-        df = pd.read_csv(csv_path)
+    # CSV einlesen mit robuster Lade-Funktion
+    df = lade_csv_robust(csv_path)
     
     pdf_path = os.path.splitext(csv_path)[0] + "_grafik.pdf"
     print("PDF wird gespeichert unter:", pdf_path)
@@ -665,11 +603,7 @@ def erstelle_auswertungsdiagramme(csv_path: str, gps_auswertung: Optional[List[s
     with PdfPages(pdf_path) as pdf:
         # GPS-Visualisierungen: Höhenprofil und Karte
         try:
-            df_gps = None
-            try:
-                df_gps = pd.read_csv(csv_path)
-            except Exception:
-                pass
+            df_gps = lade_csv_robust(csv_path)
             if df_gps is not None:
                 lat_cols = [c for c in df_gps.columns if c.lower() in ["lat", "latitude", "gps_lat", "gpslatitude"]]
                 lon_cols = [c for c in df_gps.columns if c.lower() in ["lon", "lng", "longitude", "gps_lon", "gps_lng", "gpslongitude"]]
@@ -734,7 +668,6 @@ def erstelle_auswertungsdiagramme(csv_path: str, gps_auswertung: Optional[List[s
         pbar.update(1)
 
         # Hilfsfunktion: Plots in 8er-Gruppen auf DIN A4 (2x4) Subplots
-        import tempfile
         from PIL import Image
         def plot_grid(plots, titles, kind="line", x=None, y=None, xlabel=None, ylabel=None):
             n = len(plots)
@@ -771,23 +704,35 @@ def erstelle_auswertungsdiagramme(csv_path: str, gps_auswertung: Optional[List[s
                         ax.axis('off')
                 plt.tight_layout()
                 # Speichere das Diagramm als PNG
-                import time
                 with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
-                    fig.savefig(tmpfile.name, dpi=150, bbox_inches="tight")
-                    plt.close(fig)
-                    # Füge das PNG als Bildseite in die PDF ein
-                    img = Image.open(tmpfile.name)
-                    fig_img = plt.figure(figsize=(11.7, 8.3))
-                    plt.imshow(img)
-                    plt.axis('off')
-                    pdf.savefig(fig_img)
-                    plt.close(fig_img)
-                    img.close()
-                    time.sleep(0.1)  # Warten, bis Windows die Datei freigibt
+                    tmpfile_path = tmpfile.name
+                
+                fig.savefig(tmpfile_path, dpi=150, bbox_inches="tight")
+                plt.close(fig)
+                
+                # Füge das PNG als Bildseite in die PDF ein
+                img = Image.open(tmpfile_path)
+                fig_img = plt.figure(figsize=(11.7, 8.3))
+                plt.imshow(img)
+                plt.axis('off')
+                pdf.savefig(fig_img)
+                plt.close(fig_img)
+                img.close()
+                
+                # Garbage Collection und mehrere Löschversuche
+                gc.collect()
+                time.sleep(0.2)
+                
+                for attempt in range(3):
                     try:
-                        os.remove(tmpfile.name)
-                    except PermissionError:
-                        print(f"WARNUNG: PNG konnte nicht gelöscht werden: {tmpfile.name}")
+                        os.remove(tmpfile_path)
+                        break
+                    except (PermissionError, OSError):
+                        if attempt < 2:
+                            time.sleep(0.1)
+                        # Nur beim letzten Versuch eine Warnung ausgeben (stummgeschaltet für weniger Ausgabe)
+                        # else:
+                        #     print(f"⚠️ Temp-PNG bleibt: {tmpfile_path}")
 
         # ========== 2. Histogramme für numerische Spalten ===========
         numeric_cols = df.select_dtypes(include=[np.number]).columns
@@ -797,9 +742,7 @@ def erstelle_auswertungsdiagramme(csv_path: str, gps_auswertung: Optional[List[s
         pbar.update(1)
 
         # ========== 3. Multi-Boxplot für alle numerischen Spalten ===========
-        import tempfile
         from PIL import Image
-        import time
         if len(numeric_cols) > 0:
             n = len(numeric_cols)
             cols_per_page = 4
@@ -820,31 +763,42 @@ def erstelle_auswertungsdiagramme(csv_path: str, gps_auswertung: Optional[List[s
                             max_val = np.max(daten)
                             if median > 0 and max_val / median > 100:
                                 use_log = True
-                        sns.boxplot(x=daten, ax=ax)
-                        ax.set_title(f"Boxplot: {col}", fontsize=10)
-                        ax.set_xlabel(col)
+                        # Vertikaler Boxplot (y statt x)
+                        sns.boxplot(y=daten, ax=ax)
+                        ax.set_title(f"{col}", fontsize=10, fontweight='bold')
+                        ax.set_ylabel(col, fontsize=9)
                         if use_log:
                             ax.set_yscale("log")
-                            ax.set_xlabel(f"{col} (logarithmisch)")
+                            ax.set_ylabel(f"{col} (log)", fontsize=9)
                     else:
                         ax.axis('off')
                 plt.tight_layout()
                 # Speichere das Diagramm als PNG und füge es als Bildseite ein
                 with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
-                    fig.savefig(tmpfile.name, dpi=150, bbox_inches="tight")
-                    plt.close(fig)
-                    img = Image.open(tmpfile.name)
-                    fig_img = plt.figure(figsize=(16, 8))
-                    plt.imshow(img)
-                    plt.axis('off')
-                    pdf.savefig(fig_img)
-                    plt.close(fig_img)
-                    img.close()
-                    time.sleep(0.1)
+                    tmpfile_path = tmpfile.name
+                
+                fig.savefig(tmpfile_path, dpi=150, bbox_inches="tight")
+                plt.close(fig)
+                img = Image.open(tmpfile_path)
+                fig_img = plt.figure(figsize=(16, 8))
+                plt.imshow(img)
+                plt.axis('off')
+                pdf.savefig(fig_img)
+                plt.close(fig_img)
+                img.close()
+                
+                # Garbage Collection und mehrere Löschversuche
+                gc.collect()
+                time.sleep(0.2)
+                
+                for attempt in range(3):
                     try:
-                        os.remove(tmpfile.name)
-                    except PermissionError:
-                        print(f"WARNUNG: PNG konnte nicht gelöscht werden: {tmpfile.name}")
+                        os.remove(tmpfile_path)
+                        break
+                    except (PermissionError, OSError):
+                        if attempt < 2:
+                            time.sleep(0.1)
+                        # Stummgeschaltet für saubere Ausgabe
         pbar.update(1)
 
         # ========== 4. Scatterplots für alle numerischen Spaltenpaare ===========
